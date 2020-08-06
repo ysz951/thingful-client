@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import TokenService from '../../services/token-service'
+import ThingApiService from '../../services/thing-api-service'
 import { Button, Input } from '../Utils/Utils'
 
 export default class LoginForm extends Component {
@@ -9,17 +9,23 @@ export default class LoginForm extends Component {
 
   state = { error: null }
 
-  handleSubmitBasicAuth = ev => {
+  handleSubmitBasicThing = ev => {
     ev.preventDefault()
+    this.setState({ error: null })
     const { user_name, password } = ev.target
-
-    TokenService.saveAuthToken(
-      TokenService.makeBasicAuthToken(user_name.value, password.value)
-    )
-
-    user_name.value = ''
-    password.value = ''
-    this.props.onLoginSuccess()
+    ThingApiService.postLogin({
+      user_name: user_name.value,
+      password: password.value,
+    })
+      .then(res => {
+        user_name.value = ''
+        password.value = ''
+        
+        this.props.onLoginSuccess()
+      })
+      .catch(res => {
+        this.setState({ error: res.error })
+      })
   }
 
   render() {
@@ -27,7 +33,7 @@ export default class LoginForm extends Component {
     return (
       <form
         className='LoginForm'
-        onSubmit={this.handleSubmitBasicAuth}
+        onSubmit={this.handleSubmitBasicThing}
       >
         <div role='alert'>
           {error && <p className='red'>{error}</p>}
